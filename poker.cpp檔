@@ -1,0 +1,660 @@
+#include<iostream>
+#include<string>
+#include<time.h>
+#include"poker.h"
+
+using namespace std;
+const int NUM = 5000;
+int j = 2;//定義為全域性變數
+int randNum[NUM];//因為rand()函式有一定的缺陷，所以在程式中定義了randNum陣列來存放隨機數
+	 //即使使用了種子函式srand(),由於程式執行時間比較短，也不太好設定種子。
+int static index;
+int static index2;
+Poker::Poker()
+{
+
+	poker[0] = 0;
+	for (int i = 1; i <= 13; i++)    //
+	{                         //|
+		poker[i] = i;           //|用建構函式對牌初始化
+		poker[i + 13] = i;        //|
+		poker[i + 26] = i;        //|
+		poker[i + 39] = i;        //|
+	}//for結束
+
+	pokerValue[0] = 0;
+	for (int i = 1; i <= 52; i++)
+	{
+		if (poker[i] <= 10)  pokerValue[i] = poker[i];
+		else              pokerValue[i] = 10;
+	}//for結束
+
+
+	pokerName[0] = "";
+	for (int i = 0; i < 4; i++)
+	{
+		pokerName[1 + 13 * i] = "A";
+		pokerName[2 + 13 * i] = "2";
+		pokerName[3 + 13 * i] = "3";
+		pokerName[4 + 13 * i] = "4";
+		pokerName[5 + 13 * i] = "5";
+		pokerName[6 + 13 * i] = "6";
+		pokerName[7 + 13 * i] = "7";
+		pokerName[8 + 13 * i] = "8";
+		pokerName[9 + 13 * i] = "9";
+		pokerName[10 + 13 * i] = "10";
+		pokerName[11 + 13 * i] = "J";
+		pokerName[12 + 13 * i] = "Q";
+		pokerName[13 + 13 * i] = "K";
+	}//for結束
+
+
+	money = 1000;  //玩家開始玩遊戲時錢數是1000
+	bet = 0;
+
+	for (int i = 0; i < 5; i++)
+	{
+		pokerF[i] = 0;    //|對pokerOfFarmer初始化
+		pokerL[i] = 0;    //|對pokerOfLandlord初始化
+	}
+
+
+	srand((int)time(0));
+	for (int i = 0; i < NUM; i++)
+	{
+		randNum[i] = rand() * 51 / 32767 + 1;//產生隨機數陣列
+	}
+
+}//建構函式Poker()結束
+
+void Poker::initPoker()
+{
+	cout << "新一局遊戲開始，開始洗牌>>>>>" << endl;
+
+	pokerF[0] = randNum[j++];  //產生1-52的隨機數
+	pokerF[1] = randNum[j++];  //產生1-52的隨機數
+	pokerF[2] = randNum[j++];  //產生1-52的隨機數
+	pokerF[3] = randNum[j++];  //產生1-52的隨機數
+	pokerF[4] = randNum[j++];  //產生1-52的隨機數
+
+	pokerL[0] = randNum[j++];  //產生1-52的隨機數
+	pokerL[1] = randNum[j++];  //產生1-52的隨機數
+	pokerL[2] = randNum[j++];  //產生1-52的隨機數
+	pokerL[3] = randNum[j++];  //產生1-52的隨機數
+	pokerL[4] = randNum[j++];  //產生1-52的隨機數
+
+	pokerNumF = 5;
+	pokerNumL = 5;
+
+	cout << "洗牌完成,你的牌為:" << getPokerF() << endl;
+	cout << "洗牌完成,莊家牌為:" << getPokerL() << endl;
+}//void Poker::initPoker()結束
+void Poker::getCalulation()
+{
+	for (int i = 0; i < 5; i++)
+	{
+		if (pokerF[i] % 13 == 11 || pokerF[i] % 13 == 12 || pokerF[i] % 13 == 13)
+		{
+			pokerF[i] = 10;
+		}
+		else
+			pokerF[i] = pokerF[i] % 13;
+	}
+
+}//把JQK變成10
+void Poker::getCalulation1()
+{
+	for (int i = 0; i < 5; i++)
+	{
+		if (pokerL[i] % 13 == 11 || pokerL[i] % 13 == 12 || pokerL[i] % 13 == 13)
+		{
+			pokerL[i] = 10;
+		}
+		else
+			pokerL[i] = pokerL[i] % 13;
+	}
+}//把JQK變成10
+string Poker::getPokerF()//用字串的形式返回玩家的牌
+{
+	int i;
+	string result = "";
+
+	for (i = 0; i < pokerNumF; i++)
+		result = result + pokerName[pokerF[i]] + " ";
+
+	return result;
+}//string Poker::getPokerF()結束
+
+string Poker::getPokerL()//用字串的形式返回莊家的牌
+{
+	int i;
+	string result = "";
+
+	for (i = 0; i < pokerNumL; i++)
+		result = result + pokerName[pokerL[i]] + " ";
+
+	return result;
+}//string Poker::getPokerL()結束
+
+int Poker::getSumF()//返回玩家牌的點數
+{
+	int result = 0;
+	int max1 = 0;
+	int max[11] = { 0 };
+	Poker::getCalulation();
+
+	if ((pokerF[0] + pokerF[1] + pokerF[2]) % 10 == 0)
+	{
+		if ((pokerF[3] + pokerF[4]) % 10 == 0)
+		{
+			result = ((pokerF[3] + pokerF[4]) % 10) + 10;
+			max[0] = result;
+		}
+		else
+		{
+			result = (pokerF[3] + pokerF[4]) % 10;
+			max[0] = result;
+		}
+		index = 0;
+	}
+
+	//第0位+第1位+第2位
+
+	else if ((pokerF[0] + pokerF[1] + pokerF[3]) % 10 == 0)
+	{
+		if ((pokerF[2] + pokerF[4]) % 10 == 0)
+		{
+			result = ((pokerF[2] + pokerF[4]) % 10) + 10;
+			max[1] = result;
+		}
+		else
+		{
+			result = (pokerF[2] + pokerF[4]) % 10;
+			max[1] = result;
+		}
+		index = 1;
+	}
+	else if ((pokerF[0] + pokerF[1] + pokerF[4]) % 10 == 0)
+	{
+		if ((pokerF[2] + pokerF[3]) % 10 == 0)
+		{
+			result = ((pokerF[3] + pokerF[2]) % 10) + 10;
+			max[2] = result;
+		}
+		else
+		{
+			result = (pokerF[3] + pokerF[2]) % 10;
+			max[2] = result;
+		}
+		index = 2;
+	}//第0位+第1位+第4位
+
+	else if ((pokerF[0] + pokerF[2] + pokerF[3]) % 10 == 0)
+	{
+		if ((pokerF[4] + pokerF[1]) % 10 == 0)
+		{
+			result = ((pokerF[4] + pokerF[1]) % 10) + 10;
+			max[3] = result;
+		}
+		else
+		{
+			result = (pokerF[4] + pokerF[1]) % 10;
+			max[3] = result;
+		}
+		index = 3;
+	}//第0位+第2位+第3位
+
+	else if ((pokerF[2] + pokerF[0] + pokerF[4]) % 10 == 0)
+	{
+		if ((pokerF[3] + pokerF[1]) % 10 == 0)
+		{
+			result = ((pokerF[3] + pokerF[1]) % 10) + 10;
+			max[4] = result;
+		}
+		else
+		{
+			result = (pokerF[3] + pokerF[1]) % 10;
+			max[4] = result;
+		}
+		index = 4;
+	}//第0位+第2位+第4位
+
+	else if ((pokerF[0] + pokerF[3] + pokerF[4]) % 10 == 0)
+	{
+		if ((pokerF[1] + pokerF[2]) % 10 == 0)
+		{
+			result = ((pokerF[1] + pokerF[2]) % 10) + 10;
+			max[5] = result;
+		}
+		else
+		{
+			result = (pokerF[1] + pokerF[2]) % 10;
+			max[5] = result;
+		}
+		index = 5;
+	}//第0位+第3位+第4位
+
+	else if ((pokerF[2] + pokerF[3] + pokerF[1]) % 10 == 0)
+	{
+		if ((pokerF[0] + pokerF[4]) % 10 == 0)
+		{
+			result = ((pokerF[0] + pokerF[4]) % 10) + 10;
+			max[6] = result;
+		}
+		else
+		{
+			result = (pokerF[0] + pokerF[4]) % 10;
+			max[6] = result;
+		}
+		index = 6;
+	}//第1位+第2位+第3位
+
+	else if ((pokerF[2] + pokerF[4] + pokerF[1]) % 10 == 0)
+	{
+		if ((pokerF[0] + pokerF[3]) % 10 == 0)
+		{
+			result = ((pokerF[0] + pokerF[3]) % 10) + 10;
+			max[7] = result;
+		}
+		else
+		{
+			result = (pokerF[0] + pokerF[3]) % 10;
+			max[7] = result;
+		}
+		index = 7;
+	}//第1位+第2位+第4位
+
+	else if ((pokerF[1] + pokerF[3] + pokerF[4]) % 10 == 0)
+	{
+		if ((pokerF[0] + pokerF[2]) % 10 == 0)
+		{
+			result = ((pokerF[0] + pokerF[2]) % 10) + 10;
+			max[8] = result;
+		}
+		else
+		{
+			result = (pokerF[0] + pokerF[2]) % 10;
+			max[8] = result;
+		}
+		index = 8;
+	}//第1位+第3位+第4位
+
+	else if ((pokerF[2] + pokerF[3] + pokerF[4]) % 10 == 0)
+	{
+		if ((pokerF[0] + pokerF[1]) % 10 == 0)
+		{
+			result = ((pokerF[0] + pokerF[1]) % 10) + 10;
+			max[9] = result;
+		}
+		else
+		{
+			result = (pokerF[0] + pokerF[1]) % 10;
+			max[9] = result;
+		}
+		index = 9;
+
+	}//第2位+第3位+第4位
+
+	else {
+		for (int i = 0; i < 5; i++)
+		{
+			if (max[10] < pokerF[i])
+			{
+				max[10] = pokerF[i];
+			}
+
+		}
+		index = 10;
+	}
+
+	if (max[10] == 0)
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			if (max[i] > max1)
+			{
+				max1 = max[i];
+			}
+		}
+		return max1;
+
+	}
+	else
+		max1 = max[10];
+	return max1;
+}
+
+void Poker::getBetF()
+{
+	int i = 0;
+	while (i != 1)
+	{
+		cout << "您現在的金錢有: " << money << "  您需要下注多少: ";
+		cin >> bet;
+		if (bet > money)
+		{
+			cout << endl << "ㄍㄋㄉ窮B你沒錢就不要亂下，重下一次" << endl;
+		}
+		else
+		{
+			cout << "您下注了: " << bet << " 妞妞 Start" << endl;
+			i = 1;
+		}
+	}
+
+}
+
+int Poker::getSumL()//返回玩家牌的點數
+{
+	int result = 0;
+	int max1 = 0;
+	int max[11] = { 0 };
+	Poker::getCalulation1();
+
+	if ((pokerL[0] + pokerL[1] + pokerL[2]) % 10 == 0)
+	{
+		if ((pokerL[3] + pokerL[4]) % 10 == 0)
+		{
+			result = ((pokerL[3] + pokerL[4]) % 10) + 10;
+			max[0] = result;
+		}
+		else
+		{
+			result = (pokerL[3] + pokerL[4]) % 10;
+			max[0] = result;
+		}
+		index2 = 0;
+	}
+
+	//第0位+第1位+第2位
+
+	else if ((pokerL[0] + pokerL[1] + pokerL[3]) % 10 == 0)
+	{
+		if ((pokerL[2] + pokerL[4]) % 10 == 0)
+		{
+			result = ((pokerL[2] + pokerL[4]) % 10) + 10;
+			max[1] = result;
+		}
+		else
+		{
+			result = (pokerL[2] + pokerL[4]) % 10;
+			max[1] = result;
+		}
+		index2 = 1;
+	}
+	else if ((pokerL[0] + pokerL[1] + pokerL[4]) % 10 == 0)
+	{
+		if ((pokerL[2] + pokerL[3]) % 10 == 0)
+		{
+			result = ((pokerL[3] + pokerL[2]) % 10) + 10;
+			max[2] = result;
+		}
+		else
+		{
+			result = (pokerL[3] + pokerL[2]) % 10;
+			max[2] = result;
+		}
+		index2 = 2;
+	}//第0位+第1位+第4位
+
+	else if ((pokerL[0] + pokerL[2] + pokerL[3]) % 10 == 0)
+	{
+		if ((pokerL[4] + pokerL[1]) % 10 == 0)
+		{
+			result = ((pokerL[4] + pokerL[1]) % 10) + 10;
+			max[3] = result;
+		}
+		else
+		{
+			result = (pokerL[4] + pokerL[1]) % 10;
+			max[3] = result;
+		}
+		index2 = 3;
+	}//第0位+第2位+第3位
+
+	else if ((pokerL[2] + pokerL[0] + pokerL[4]) % 10 == 0)
+	{
+		if ((pokerL[3] + pokerL[1]) % 10 == 0)
+		{
+			result = ((pokerL[3] + pokerL[1]) % 10) + 10;
+			max[4] = result;
+		}
+		else
+		{
+			result = (pokerL[3] + pokerL[1]) % 10;
+			max[4] = result;
+		}
+		index2 = 4;
+	}//第0位+第2位+第4位
+
+	else if ((pokerL[0] + pokerL[3] + pokerL[4]) % 10 == 0)
+	{
+		if ((pokerL[1] + pokerL[2]) % 10 == 0)
+		{
+			result = ((pokerL[1] + pokerL[2]) % 10) + 10;
+			max[5] = result;
+		}
+		else
+		{
+			result = (pokerL[1] + pokerL[2]) % 10;
+			max[5] = result;
+		}
+		index2 = 5;
+	}//第0位+第3位+第4位
+
+	else if ((pokerL[2] + pokerL[3] + pokerL[1]) % 10 == 0)
+	{
+		if ((pokerL[0] + pokerL[4]) % 10 == 0)
+		{
+			result = ((pokerL[0] + pokerL[4]) % 10) + 10;
+			max[6] = result;
+		}
+		else
+		{
+			result = (pokerL[0] + pokerL[4]) % 10;
+			max[6] = result;
+		}
+		index2 = 6;
+	}//第1位+第2位+第3位
+
+	else if ((pokerL[2] + pokerL[4] + pokerL[1]) % 10 == 0)
+	{
+		if ((pokerL[0] + pokerL[3]) % 10 == 0)
+		{
+			result = ((pokerL[0] + pokerL[3]) % 10) + 10;
+			max[7] = result;
+		}
+		else
+		{
+			result = (pokerL[0] + pokerL[3]) % 10;
+			max[7] = result;
+		}
+		index2 = 7;
+	}//第1位+第2位+第4位
+
+	else if ((pokerL[1] + pokerL[3] + pokerL[4]) % 10 == 0)
+	{
+		if ((pokerL[0] + pokerL[2]) % 10 == 0)
+		{
+			result = ((pokerL[0] + pokerL[2]) % 10) + 10;
+			max[8] = result;
+		}
+		else
+		{
+			result = (pokerL[0] + pokerL[2]) % 10;
+			max[8] = result;
+		}
+		index2 = 8;
+	}//第1位+第3位+第4位
+
+	else if ((pokerL[2] + pokerL[3] + pokerL[4]) % 10 == 0)
+	{
+		if ((pokerL[0] + pokerL[1]) % 10 == 0)
+		{
+			result = ((pokerL[0] + pokerL[1]) % 10) + 10;
+			max[9] = result;
+		}
+		else
+		{
+			result = (pokerL[0] + pokerL[1]) % 10;
+			max[9] = result;
+		}
+		index2 = 9;
+	}//第2位+第3位+第4位
+	else {
+		for (int i = 0; i < 5; i++)
+		{
+			if (max[10] < pokerL[i])
+			{
+				max[10] = pokerL[i];
+			}
+
+		}
+		index2 = 10;
+	}
+
+	if (max[10] == 0)
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			if (max[i] > max1)
+			{
+				max1 = max[i];
+			}
+		}
+		return max1;
+
+	}
+	else
+		max1 = max[10];
+	return max1;
+}
+int Poker::getMoney()
+{
+	return money;
+}
+
+void Poker::nionio()
+{
+	cout << "您的點數為: " << getSumF() << "       莊家點數為: " << getSumL() << endl;
+	if (getSumF() > getSumL())
+	{
+		if (index != 10 ) {
+			if (getSumF() == 10)
+			{
+				cout << "您妞妞了恭喜你贏得: " << bet * 3 << "您目前有: " << money + (bet * 3) << endl;
+				money = money + (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "恭喜你贏得: " << bet * 2 << "您目前有: " << money + (bet * 2) << endl;
+				money = money + (bet * 2);
+			}
+			else
+			{
+				cout << "恭喜你贏得: " << bet << " 您目前有: " << money + bet << endl;
+				money = money + bet;
+			}
+		}
+		else if (index == 10 && index2 != 10) {
+			if (getSumL() == 10)
+			{
+				cout << "莊家妞妞了非常恭喜你輸了: " << bet * 3 << "您目前有: " << money - (bet * 3) << endl;
+				money = money - (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "Very恭喜你輸了: " << bet * 2 << "您目前有: " << money - (bet * 2) << endl;
+				money = money - (bet * 2);
+			}
+
+			else
+			{
+				cout << "莊家有一個妞超級恭喜你輸了: " << bet << "您目前有: " << money - bet << endl;
+				money = money - bet;
+			}
+		}
+	}
+	else if (getSumF() < getSumL())
+	{
+		if (index2 != 10) {
+			if (getSumL() == 10)
+			{
+				cout << "莊家妞妞了非常恭喜你輸了: " << bet * 3 << "您目前有: " << money - (bet * 3) << endl;
+				money = money - (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "Very恭喜你輸了: " << bet * 2 << "您目前有: " << money - (bet * 2) << endl;
+				money = money - (bet * 2);
+			}
+			else
+			{
+				cout << "超級恭喜你輸了: " << bet << "您目前有: " << money - bet << endl;
+				money = money - bet;
+			}
+		}
+		else if (index != 10 && index2 == 10){
+			if (getSumF() == 10)
+			{
+				cout << "您妞妞了恭喜你贏得: " << bet * 3 << "您目前有: " << money + (bet * 3) << endl;
+				money = money + (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "恭喜你贏得: " << bet * 2 << "您目前有: " << money + (bet * 2) << endl;
+				money = money + (bet * 2);
+			}
+			else
+			{
+				cout << "恭喜你贏得: " << bet << " 您目前有: " << money + bet << endl;
+				money = money + bet;
+			}
+		}
+	}
+	else {
+		if (index != 10 && index2 != 10) {
+			cout << "您與莊家平手" << endl;
+		}
+		else if (index == 10 && index2 == 10) {
+			cout << "您與莊家平手" << endl;
+		}
+		else if (index != 10 && index2 == 10) {
+			if (getSumF() == 10)
+			{
+				cout << "您妞妞了恭喜你贏得: " << bet * 3 << "您目前有: " << money + (bet * 3) << endl;
+				money = money + (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "恭喜你贏得: " << bet * 2 << "您目前有: " << money + (bet * 2) << endl;
+				money = money + (bet * 2);
+			}
+			else
+			{
+				cout << "恭喜你贏得: " << bet << " 您目前有: " << money + bet << endl;
+				money = money + bet;
+			}
+		}
+		else if (index == 10 && index2 != 10) {
+			if (getSumL() == 10)
+			{
+				cout << "莊家妞妞了非常恭喜你輸了: " << bet * 3 << "您目前有: " << money - (bet * 3) << endl;
+				money = money - (bet * 3);
+			}
+			else if (getSumF() == 9 || getSumF() == 8)
+			{
+				cout << "Very恭喜你輸了: " << bet * 2 << "您目前有: " << money - (bet * 2) << endl;
+				money = money - (bet * 2);
+			}
+			else
+			{
+				cout << "超級恭喜你輸了: " << bet << "您目前有: " << money - bet << endl;
+				money = money - bet;
+			}
+		}
+		
+	}
+
+
+}
