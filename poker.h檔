@@ -1,0 +1,47 @@
+#include<string>
+
+using namespace std;
+
+#ifndef Poker_h
+#define Poker_h
+class Poker
+{
+private:
+	int poker[53];     //撲克
+	int pokerValue[53]; //撲克代表的數值
+	string pokerName[53]; //撲克名
+
+	int money;   //玩家錢數	
+	int bet;     //玩家的賭注
+
+	int pokerF[5];   //玩家手中的牌 F:Farmer   L:Landlord
+	int pokerL[5];   //莊家手中的牌 F:Farmer   L:Landlord
+	int pokerNumF;   //玩家手中的牌數
+	int pokerNumL;   //莊家手中的牌數
+public:
+	Poker(); //建構一副撲克牌
+
+	void initPoker();  //洗牌,在每輪遊戲開始前進行
+
+	string getPokerF();  //用字串的形式返回玩家的牌
+
+	string getPokerL();  //用字串的形式返回莊家的牌
+
+	void getBetF();		//下注金額
+
+	int getSumF();       //返回玩家牌的點數
+
+	int getSumL();       //返回莊家牌的點數
+
+	void nionio();		 //妞妞start
+
+	void getCalulation();//轉換getPokerF(),getPokerL();
+
+	int getMoney();		//回傳金錢數
+
+	void getCalulation1();	//轉換getPokerF(),getPokerL();
+};
+
+#endif
+
+
