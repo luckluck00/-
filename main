@@ -1,0 +1,40 @@
+#include"poker.h"
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+int main()
+{
+	int gameStart = 1;
+	Poker poker;
+	cout << "**************************歡迎來到妞妞的賭場**************************" << endl;
+	cout << "規則如下"<< '\n' <<"五張撲克牌分前兩張、後三張，後三張湊成十的倍數成為第一個「妞」，前兩張相加的個位數拿來跟莊家比大小"<<'\n'<<"若相加後超過八，且贏過別人，賭金乘以2倍，相加等於十的倍數成為第二個「妞」，就可以乘上3倍"<<'\n'<<"若都無妞，則用點數最大的去比，翻牌定輸贏" << endl;
+	while (gameStart == 1 || gameStart == 2 || gameStart == 3)
+	{
+		cout << "如要進行妞妞請輸入1 , 離開請輸入2 , 想白爛就按3  ";
+		cin >> gameStart;
+		if (gameStart == 1)
+		{
+			poker.getBetF();
+			poker.initPoker();
+			poker.nionio();
+		}
+		if (poker.getMoney() <= 0)
+		{
+			cout << "ㄍㄋㄉ窮B沒錢就給我滾" << endl;
+			break;
+		}
+		else if (gameStart == 2)
+		{
+			break;
+		}
+
+		else if (gameStart == 3)
+		{
+			cout << "ㄋㄊㄇㄉ還想白爛給我滾" << endl;
+			break;
+		}
+	}
+	system("pause");
+}
